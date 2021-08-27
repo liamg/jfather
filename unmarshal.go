@@ -1,11 +1,16 @@
-package main
+package jfather
+
+import "bytes"
 
 type Unmarshaller interface {
 	UnmarshalJFather(node Node) error
 }
 
 func Unmarshal(data []byte, target interface{}) error {
-	node := parse(data)
+	node, err := newParser(NewPeekReader(bytes.NewReader(data)), 1, 1).parse()
+	if err != nil {
+		return err
+	}
 	if unmarshaller, ok := target.(Unmarshaller); ok {
 		return unmarshaller.UnmarshalJFather(node)
 	}

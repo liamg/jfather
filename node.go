@@ -1,10 +1,11 @@
-package main
+package jfather
 
 type Node interface {
-	Offset() int
 	Start() Range
 	End() Range
 	Decode(target interface{}) error
+	Kind() Kind
+	Content() []Node
 }
 
 type Range struct {
@@ -13,22 +14,29 @@ type Range struct {
 }
 
 type node struct {
-	data   []byte
-	start  Range
-	end    Range
-	offset int
+	data    []byte
+	start   Range
+	end     Range
+	kind    Kind
+	content []Node
 }
 
 func (n *node) Decode(target interface{}) error {
 	return decode(n, target)
 }
 
-func (n *node) Offset() int {
-	return n.offset
-}
 func (n *node) Start() Range {
 	return n.start
 }
+
 func (n *node) End() Range {
 	return n.end
+}
+
+func (n *node) Kind() Kind {
+	return n.kind
+}
+
+func (n *node) Content() []Node {
+	return n.content
 }

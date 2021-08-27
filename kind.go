@@ -1,4 +1,4 @@
-package main
+package jfather
 
 type Kind uint8
 
