@@ -170,7 +170,7 @@ func (p *parser) parseObject() (Node, error) {
 
 		// we've hit the end of the object
 		if p.swallowIfEqual('}') {
-			n.data = append(n.data, c)
+			n.data = append(n.data, '}')
 			n.end.Column = p.column
 			n.end.Line = p.line
 			return n, nil
