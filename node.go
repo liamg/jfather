@@ -1,35 +1,38 @@
 package jfather
 
 type Node interface {
-	Start() Range
-	End() Range
+	Range() Range
 	Decode(target interface{}) error
 	Kind() Kind
 	Content() []Node
 }
 
 type Range struct {
+	Start Position
+	End   Position
+}
+
+type Position struct {
 	Line   int
 	Column int
 }
 
 type node struct {
 	raw     interface{}
-	start   Range
-	end     Range
+	start   Position
+	end     Position
 	kind    Kind
 	content []Node
 }
 
-func (n *node) Decode(target interface{}) error {
-	return decode(n, target)
+func (n *node) Range() Range {
+	return Range{
+		Start: n.start,
+		End:   n.end,
+	}
 }
 
-func (n *node) Start() Range {
-	return n.start
-}
-
-func (n *node) End() Range {
+func (n *node) End() Position {
 	return n.end
 }
 

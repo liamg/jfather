@@ -4,9 +4,10 @@ type Kind uint8
 
 const (
 	KindUnknown Kind = iota
+	KindNull
 	KindNumber
 	KindString
-	KindList
+	KindBoolean
+	KindArray
 	KindObject
-	KindNull
 )

@@ -73,8 +73,7 @@ func (p *parser) parseString() (Node, error) {
 				inEscape = true
 			case '"':
 				n.raw = str
-				n.end.Line = p.line
-				n.end.Column = p.column
+				n.end = p.position
 				return n, nil
 			default:
 				if c < 0x20 || c > 0x10FFFF {

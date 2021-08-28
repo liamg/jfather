@@ -7,7 +7,7 @@ type Unmarshaller interface {
 }
 
 func Unmarshal(data []byte, target interface{}) error {
-	node, err := newParser(NewPeekReader(bytes.NewReader(data)), 1, 1).parse()
+	node, err := newParser(NewPeekReader(bytes.NewReader(data)), Position{1, 1}).parse()
 	if err != nil {
 		return err
 	}

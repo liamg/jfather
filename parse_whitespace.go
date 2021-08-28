@@ -11,8 +11,8 @@ func (p *parser) parseWhitespace() error {
 			_, err := p.next()
 			return err
 		case 0x0a:
-			p.column = 1
-			p.line++
+			p.position.Column = 1
+			p.position.Line++
 		default:
 			return nil
 		}

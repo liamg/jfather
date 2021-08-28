@@ -18,21 +18,19 @@ func (p *parser) parseObject() (Node, error) {
 	if err := p.parseWhitespace(); err != nil {
 		return nil, err
 	}
+	// we've hit the end of the object
+	if p.swallowIfEqual('}') {
+		n.end = p.position
+		return n, nil
+	}
 
 	// for each key/val
 	for {
-
-		// we've hit the end of the object
-		if p.swallowIfEqual('}') {
-			n.end.Column = p.column
-			n.end.Line = p.line
-			return n, nil
-		}
-
 		key, err := p.parseString()
 		if err != nil {
 			return nil, err
 		}
+		n.content = append(n.content, key)
 
 		if err := p.parseWhitespace(); err != nil {
 			return nil, err
@@ -42,16 +40,24 @@ func (p *parser) parseObject() (Node, error) {
 			return nil, p.makeError("invalid character, expecting ':'")
 		}
 
-		valParser := newParser(p.peeker, p.line, p.column)
+		valParser := newParser(p.peeker, p.position)
 		val, err := valParser.parse()
 		if err != nil {
 			return nil, err
 		}
-		p.line = valParser.line
-		p.column = valParser.column
+		p.position = valParser.position
 		p.size += valParser.size
+		n.content = append(n.content, val)
 
-		_, _ = key, val
+		// we've hit the end of the object
+		if p.swallowIfEqual('}') {
+			n.end = p.position
+			return n, nil
+		}
+
+		if !p.swallowIfEqual(',') {
+			return nil, p.makeError("unexpected character - expecting , or }")
+		}
 	}
 
 }

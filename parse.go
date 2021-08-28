@@ -5,17 +5,15 @@ import (
 )
 
 type parser struct {
-	line   int
-	column int
-	size   int
-	peeker *PeekReader
+	position Position
+	size     int
+	peeker   *PeekReader
 }
 
-func newParser(p *PeekReader, line int, column int) *parser {
+func newParser(p *PeekReader, pos Position) *parser {
 	return &parser{
-		line:   line,
-		column: column,
-		peeker: p,
+		position: pos,
+		peeker:   p,
 	}
 }
 
@@ -35,9 +33,17 @@ func (p *parser) parse() (Node, error) {
 		return p.parseString()
 	case '{':
 		return p.parseObject()
+	case '[':
+		return p.parseArray()
+	case 'n':
+		return p.parseNull()
+	case 't', 'f':
+		return p.parseBoolean()
 	default:
+		if c == '-' || (c >= '0' && c <= '9') {
+			return p.parseNumber()
+		}
 		return nil, fmt.Errorf("unexpected character '%c'", c)
-
 	}
 }
 
@@ -46,27 +52,33 @@ func (p *parser) next() (rune, error) {
 	if err != nil {
 		return 0, err
 	}
-	p.column++
+	p.position.Column++
 	p.size++
 	return b, nil
+}
+
+func (p *parser) undo() error {
+	if err := p.peeker.Undo(); err != nil {
+		return err
+	}
+	p.position.Column--
+	p.size--
+	return nil
 }
 
 func (p *parser) makeError(format string, args ...interface{}) error {
 	return fmt.Errorf(
 		"Error at line %d, column %d: %s",
-		p.line,
-		p.column,
+		p.position.Line,
+		p.position.Column,
 		fmt.Sprintf(format, args...),
 	)
 }
 
 func (p *parser) newNode(k Kind) *node {
 	return &node{
-		start: Range{
-			Line:   p.line,
-			Column: p.column,
-		},
-		kind: k,
+		start: p.position,
+		kind:  k,
 	}
 }
 
