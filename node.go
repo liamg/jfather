@@ -14,7 +14,7 @@ type Range struct {
 }
 
 type node struct {
-	data    []byte
+	raw     interface{}
 	start   Range
 	end     Range
 	kind    Kind
