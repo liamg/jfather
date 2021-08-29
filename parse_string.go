@@ -4,6 +4,7 @@ import "strconv"
 
 var escapes = map[rune]string{
 	'\\': "\\",
+	'/':  "/",
 	'"':  "\"",
 	'n':  "\n",
 	'r':  "\r",
@@ -13,10 +14,6 @@ var escapes = map[rune]string{
 }
 
 func (p *parser) parseString() (Node, error) {
-
-	if err := p.parseWhitespace(); err != nil {
-		return nil, err
-	}
 
 	n := p.newNode(KindString)
 
@@ -77,7 +74,7 @@ func (p *parser) parseString() (Node, error) {
 				return n, nil
 			default:
 				if c < 0x20 || c > 0x10FFFF {
-					return nil, p.makeError("invalid string character '0x%X'", c)
+					return nil, p.makeError("invalid unescaped character '0x%X'", c)
 				}
 				str += string(c)
 			}

@@ -2,10 +2,6 @@ package jfather
 
 func (p *parser) parseObject() (Node, error) {
 
-	if err := p.parseWhitespace(); err != nil {
-		return nil, err
-	}
-
 	n := p.newNode(KindObject)
 	c, err := p.next()
 	if err != nil {
@@ -26,6 +22,11 @@ func (p *parser) parseObject() (Node, error) {
 
 	// for each key/val
 	for {
+
+		if err := p.parseWhitespace(); err != nil {
+			return nil, err
+		}
+
 		key, err := p.parseString()
 		if err != nil {
 			return nil, err
@@ -40,13 +41,10 @@ func (p *parser) parseObject() (Node, error) {
 			return nil, p.makeError("invalid character, expecting ':'")
 		}
 
-		valParser := newParser(p.peeker, p.position)
-		val, err := valParser.parse()
+		val, err := p.parseElement()
 		if err != nil {
 			return nil, err
 		}
-		p.position = valParser.position
-		p.size += valParser.size
 		n.content = append(n.content, val)
 
 		// we've hit the end of the object

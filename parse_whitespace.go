@@ -1,9 +1,14 @@
 package jfather
 
+import "io"
+
 func (p *parser) parseWhitespace() error {
 	for {
 		b, err := p.peeker.Peek()
 		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
 			return err
 		}
 		switch b {

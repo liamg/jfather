@@ -18,11 +18,24 @@ func newParser(p *PeekReader, pos Position) *parser {
 }
 
 func (p *parser) parse() (Node, error) {
+	return p.parseElement()
+}
 
+func (p *parser) parseElement() (Node, error) {
 	if err := p.parseWhitespace(); err != nil {
 		return nil, err
 	}
+	n, err := p.parseValue()
+	if err != nil {
+		return nil, err
+	}
+	if err := p.parseWhitespace(); err != nil {
+		return nil, err
+	}
+	return n, nil
+}
 
+func (p *parser) parseValue() (Node, error) {
 	c, err := p.peeker.Peek()
 	if err != nil {
 		return nil, err
