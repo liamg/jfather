@@ -35,6 +35,9 @@ func (n *node) decodeNumber(v reflect.Value) error {
 			v.SetFloat(f64)
 			return nil
 		}
+	case reflect.Interface:
+		v.Set(reflect.ValueOf(n.raw))
+		return nil
 	default:
 		return fmt.Errorf("cannot decode number value to *%s target", v.Kind())
 	}
