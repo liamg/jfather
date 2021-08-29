@@ -33,7 +33,7 @@ func (p *parser) parseArray() (Node, error) {
 		}
 		n.content = append(n.content, val)
 
-		// we've hit the end of the object
+		// we've hit the end of the array
 		if p.swallowIfEqual(']') {
 			n.end = p.position
 			return n, nil

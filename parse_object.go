@@ -11,9 +11,11 @@ func (p *parser) parseObject() (Node, error) {
 	if c != '{' {
 		return nil, p.makeError("expecting object delimiter")
 	}
+
 	if err := p.parseWhitespace(); err != nil {
 		return nil, err
 	}
+
 	// we've hit the end of the object
 	if p.swallowIfEqual('}') {
 		n.end = p.position

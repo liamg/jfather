@@ -28,7 +28,10 @@ type node struct {
 func (n *node) Range() Range {
 	return Range{
 		Start: n.start,
-		End:   n.end,
+		End: Position{
+			Column: n.end.Column - 1,
+			Line:   n.end.Line,
+		},
 	}
 }
 
