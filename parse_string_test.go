@@ -22,3 +22,11 @@ func Test_StringToUninitialisedPointer(t *testing.T) {
 	require.Error(t, err)
 	assert.Nil(t, str)
 }
+
+func Test_String_ToInterface(t *testing.T) {
+	example := []byte(`"hello"`)
+	var output interface{}
+	err := Unmarshal(example, &output)
+	require.NoError(t, err)
+	assert.Equal(t, "hello", output)
+}

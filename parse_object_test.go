@@ -57,3 +57,28 @@ func Test_ObjectWithPointerToNestedStruct(t *testing.T) {
 	assert.Equal(t, "testing", parent.Name)
 	assert.Equal(t, "password", parent.Child.Blah)
 }
+
+func Test_Object_ToMapStringInterface(t *testing.T) {
+	example := []byte(`{
+	"Name": "testing"
+}`)
+
+	parent := make(map[string]interface{})
+	require.NoError(t, Unmarshal(example, &parent))
+	assert.Equal(t, "testing", parent["Name"])
+}
+
+func Test_Object_ToNestedMapStringInterface(t *testing.T) {
+	example := []byte(`{
+	"Child": {
+		"secret": "password"
+	},
+	"Name": "testing"
+}`)
+
+	parent := make(map[string]interface{})
+	require.NoError(t, Unmarshal(example, &parent))
+	assert.Equal(t, "testing", parent["Name"])
+	child := parent["Child"].(map[string]interface{})
+	assert.Equal(t, "password", child["secret"])
+}

@@ -30,10 +30,18 @@ func Test_Boolean_ToNonBoolPointer(t *testing.T) {
 	require.Error(t, err)
 }
 
-func Test_BoolToUninitialisedPointer(t *testing.T) {
+func Test_Bool_ToUninitialisedPointer(t *testing.T) {
 	example := []byte(`true`)
 	var str *string
 	err := Unmarshal(example, str)
 	require.Error(t, err)
 	assert.Nil(t, str)
+}
+
+func Test_Bool_ToInterface(t *testing.T) {
+	example := []byte(`true`)
+	var output interface{}
+	err := Unmarshal(example, &output)
+	require.NoError(t, err)
+	assert.True(t, output.(bool))
 }

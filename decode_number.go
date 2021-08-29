@@ -39,7 +39,7 @@ func (n *node) decodeNumber(v reflect.Value) error {
 		v.Set(reflect.ValueOf(n.raw))
 		return nil
 	default:
-		return fmt.Errorf("cannot decode number value to *%s target", v.Kind())
+		return fmt.Errorf("cannot decode number value to %s target", v.Kind())
 	}
 
 	return fmt.Errorf("internal value is not numeric")

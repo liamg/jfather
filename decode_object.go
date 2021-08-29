@@ -7,16 +7,43 @@ import (
 )
 
 func (n *node) decodeObject(v reflect.Value) error {
-
-	if v.Kind() == reflect.Struct {
+	switch v.Kind() {
+	case reflect.Struct:
 		return n.decodeObjectToStruct(v)
+	case reflect.Map:
+		return n.decodeObjectToMap(v)
+	case reflect.Interface:
+		target := reflect.New(reflect.TypeOf(make(map[string]interface{}, len(n.Content())))).Elem()
+		if err := n.decodeObjectToMap(target); err != nil {
+			return err
+		}
+		v.Set(target)
+		return nil
+	default:
+		return fmt.Errorf("cannot set object value to target of type %s", v.Kind())
+	}
+}
+
+func (n *node) decodeObjectToMap(v reflect.Value) error {
+	properties, err := n.objectAsMap()
+	if err != nil {
+		return err
 	}
 
-	if v.Kind() == reflect.Map {
-		return fmt.Errorf("not supported")
+	newMap := reflect.MakeMap(v.Type())
+	valueType := v.Type().Elem()
+
+	for key, value := range properties {
+		target := reflect.New(valueType).Elem()
+		if err := value.(*node).decodeToValue(target); err != nil {
+			return err
+		}
+		newMap.SetMapIndex(reflect.ValueOf(key), target)
 	}
 
-	return fmt.Errorf("bad target type")
+	v.Set(newMap)
+	return nil
+
 }
 
 func (n *node) objectAsMap() (map[string]Node, error) {

@@ -6,10 +6,13 @@ import (
 )
 
 func (n *node) decodeBoolean(v reflect.Value) error {
-	if v.Kind() != reflect.Bool {
-		return fmt.Errorf("cannot decode boolean value to non-boolean target")
+	switch v.Kind() {
+	case reflect.Bool:
+		v.SetBool(n.raw.(bool))
+	case reflect.Interface:
+		v.Set(reflect.ValueOf(n.raw))
+	default:
+		return fmt.Errorf("cannot decode boolean value to %s target", v.Kind())
 	}
-
-	v.SetBool(n.raw.(bool))
 	return nil
 }
