@@ -1,14 +1,3 @@
-# jfather
-
-Parse JSON with line numbers and more!
-
-This is a JSON parsing module that provides additional information during the unmarshalling process, such as line numbers, columns etc.
-
-You can use jfather to unmarshal JSON just like the `encoding/json` package, except implementing your own unmarshalling functionality to gather metadata can be done by implementing the `jfather.Umarshaller` interface, which requires a method with the signature `UnmarshalJSONWithMetadata(node jfather.Node) error`. A full example is below.
-
-## Full Example
-
-```golang
 package main
 
 import (
@@ -48,4 +37,3 @@ func main() {
 	// outputs:
 	//  Child value is at line 2, column 12, and is set to 'secret'
 }
-```

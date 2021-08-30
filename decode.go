@@ -10,7 +10,18 @@ func (n *node) Decode(target interface{}) error {
 	return n.decodeToValue(v)
 }
 
+var inter = reflect.TypeOf((*Unmarshaller)(nil)).Elem()
+
 func (n *node) decodeToValue(v reflect.Value) error {
+
+	if v.Type().Implements(inter) {
+		returns := v.MethodByName("UnmarshalJSONWithMetadata").Call([]reflect.Value{reflect.ValueOf(n)})
+		if err := returns[0].Interface(); err != nil {
+			return err.(error)
+		}
+		return nil
+	}
+
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
