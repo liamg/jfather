@@ -1,5 +1,7 @@
 # jfather
 
+[![build](https://github.com/liamg/jfather/actions/workflows/test.yml/badge.svg)](https://github.com/liamg/jfather/actions/workflows/test.yml)
+
 Parse JSON with line numbers and more!
 
 This is a JSON parsing module that provides additional information during the unmarshalling process, such as line numbers, columns etc.
