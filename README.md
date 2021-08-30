@@ -11,7 +11,6 @@ You should not use this package unless you need the line/column metadata, as unm
 ```
 BenchmarkUnmarshal_JFather-8       	   39483	     34222 ns/op
 BenchmarkUnmarshal_Traditional-8   	  176756	      7244 ns/op
-
 ```
 
 ## Full Example
