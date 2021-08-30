@@ -4,7 +4,15 @@ Parse JSON with line numbers and more!
 
 This is a JSON parsing module that provides additional information during the unmarshalling process, such as line numbers, columns etc.
 
-You can use jfather to unmarshal JSON just like the `encoding/json` package, except implementing your own unmarshalling functionality to gather metadata can be done by implementing the `jfather.Umarshaller` interface, which requires a method with the signature `UnmarshalJSONWithMetadata(node jfather.Node) error`. A full example is below.
+You can use jfather to unmarshal JSON just like the `encoding/json` package, and add your own unmarshalling functionality to gather metadata by implementing the `jfather.Umarshaller` interface. This requires a single method with the signature `UnmarshalJSONWithMetadata(node jfather.Node) error`. A full example is below.
+
+You should not use this package unless you need the line/column metadata, as unmarshalling is typically much slower than the `encoding/json` package:
+
+```
+BenchmarkUnmarshal_JFather-8       	   39483	     34222 ns/op
+BenchmarkUnmarshal_Traditional-8   	  176756	      7244 ns/op
+
+```
 
 ## Full Example
 

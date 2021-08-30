@@ -32,6 +32,6 @@ func Test_DecodeWithMetadata(t *testing.T) {
 	var parent TestParent
 	require.NoError(t, Unmarshal(example, &parent))
 	assert.Equal(t, 3, parent.Child.Line)
-	assert.Equal(t, 11, parent.Child.Column)
+	assert.Equal(t, 12, parent.Child.Column)
 	assert.Equal(t, "secret", parent.Child.Name)
 }
