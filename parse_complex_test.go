@@ -32,3 +32,101 @@ func Test_Complex(t *testing.T) {
 }`
 	require.NoError(t, Unmarshal([]byte(input), &target))
 }
+
+type Resource struct {
+	Line    int
+	id      string
+	comment string
+	inner   resourceInner
+}
+
+type resourceInner struct {
+	Type       string               `json:"Type" yaml:"Type"`
+	Properties map[string]*Property `json:"Properties" yaml:"Properties"`
+}
+
+func (r *Resource) UnmarshalJSONWithMetadata(node Node) error {
+	r.Line = node.Range().Start.Line
+	return node.Decode(&r.inner)
+}
+
+type Parameter struct {
+	inner parameterInner
+}
+
+type parameterInner struct {
+	Type    string      `json:"Type" yaml:"Type"`
+	Default interface{} `yaml:"Default"`
+}
+
+func (p *Parameter) UnmarshalJSONWithMetadata(node Node) error {
+	return node.Decode(&p.inner)
+}
+
+type Property struct {
+	name    string
+	comment string
+	Line    int
+	inner   propertyInner
+}
+
+type CFType string
+
+type propertyInner struct {
+	Type  CFType
+	Value interface{} `json:"Value" yaml:"Value"`
+}
+
+func (p *Property) UnmarshalJSONWithMetadata(node Node) error {
+	p.Line = node.Range().Start.Line
+	return node.Decode(&p.inner)
+}
+
+type Temp struct {
+	BucketName       *Parameter
+	BucketKeyEnabled *Parameter
+}
+
+type FileContext struct {
+	filepath   string
+	Parameters map[string]*Parameter `json:"Parameters" yaml:"Parameters"`
+	Resources  map[string]*Resource  `json:"Resources" yaml:"Resources"`
+}
+
+func Test_CloudFormation(t *testing.T) {
+	var target FileContext
+	input := `
+{
+  "Parameters": {
+   "BucketName":  {
+      "Type": "String",
+      "Default": "naughty"
+    },
+	"BucketKeyEnabled": {
+      "Type": "Boolean",
+      "Default": false
+    }
+  },
+  "Resources": {
+    "S3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {
+          "Ref": "BucketName"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "BucketKeyEnabled": {
+                "Ref": "BucketKeyEnabled"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+`
+	require.NoError(t, Unmarshal([]byte(input), &target))
+}
