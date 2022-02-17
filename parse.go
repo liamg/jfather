@@ -81,7 +81,7 @@ func (p *parser) undo() error {
 
 func (p *parser) makeError(format string, args ...interface{}) error {
 	return fmt.Errorf(
-		"Error at line %d, column %d: %s",
+		"error at line %d, column %d: %s",
 		p.position.Line,
 		p.position.Column,
 		fmt.Sprintf(format, args...),

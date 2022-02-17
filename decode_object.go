@@ -37,14 +37,9 @@ func (n *node) decodeObjectToMap(v reflect.Value) error {
 		target := reflect.New(valueType).Elem()
 		if target.Kind() == reflect.Ptr {
 			target.Set(reflect.New(valueType.Elem()))
-		} else {
-			target = target.Addr()
 		}
 		if err := value.(*node).decodeToValue(target); err != nil {
 			return err
-		}
-		if target.Type().Kind() == reflect.Ptr {
-			target = target.Elem()
 		}
 		newMap.SetMapIndex(reflect.ValueOf(key), target)
 	}
