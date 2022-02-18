@@ -1,84 +1,107 @@
 package jfather
 
 import (
-	"testing"
+    "testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
+    "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/require"
 )
 
 func Test_Object(t *testing.T) {
-	example := []byte(`{
+    example := []byte(`{
 	"name": "testing",
 	"balance": 3.14
 }`)
-	target := struct {
-		Name    string  `json:"name"`
-		Balance float64 `json:"balance"`
-	}{}
-	require.NoError(t, Unmarshal(example, &target))
-	assert.Equal(t, "testing", target.Name)
-	assert.Equal(t, 3.14, target.Balance)
+    target := struct {
+        Name    string  `json:"name"`
+        Balance float64 `json:"balance"`
+    }{}
+    require.NoError(t, Unmarshal(example, &target))
+    assert.Equal(t, "testing", target.Name)
+    assert.Equal(t, 3.14, target.Balance)
 }
 
 func Test_ObjectWithPointers(t *testing.T) {
-	example := []byte(`{
+    example := []byte(`{
 	"name": "testing",
 	"balance": 3.14
 }`)
-	target := struct {
-		Name    *string  `json:"name"`
-		Balance *float64 `json:"balance"`
-	}{}
-	require.NoError(t, Unmarshal(example, &target))
-	assert.Equal(t, "testing", *target.Name)
-	assert.Equal(t, 3.14, *target.Balance)
+    target := struct {
+        Name    *string  `json:"name"`
+        Balance *float64 `json:"balance"`
+    }{}
+    require.NoError(t, Unmarshal(example, &target))
+    assert.Equal(t, "testing", *target.Name)
+    assert.Equal(t, 3.14, *target.Balance)
 }
 
 type nestedParent struct {
-	Child *nestedChild
-	Name  string
+    Child *nestedChild
+    Name  string
 }
 
 type nestedChild struct {
-	Blah string `json:"secret"`
+    Blah string `json:"secret"`
 }
 
 func Test_ObjectWithPointerToNestedStruct(t *testing.T) {
-	example := []byte(`{
+    example := []byte(`{
 	"Child": {
 		"secret": "password"
 	},
 	"Name": "testing"
 }`)
 
-	var parent nestedParent
-	require.NoError(t, Unmarshal(example, &parent))
-	assert.Equal(t, "testing", parent.Name)
-	assert.Equal(t, "password", parent.Child.Blah)
+    var parent nestedParent
+    require.NoError(t, Unmarshal(example, &parent))
+    assert.Equal(t, "testing", parent.Name)
+    assert.Equal(t, "password", parent.Child.Blah)
 }
 
 func Test_Object_ToMapStringInterface(t *testing.T) {
-	example := []byte(`{
+    example := []byte(`{
 	"Name": "testing"
 }`)
 
-	parent := make(map[string]interface{})
-	require.NoError(t, Unmarshal(example, &parent))
-	assert.Equal(t, "testing", parent["Name"])
+    parent := make(map[string]interface{})
+    require.NoError(t, Unmarshal(example, &parent))
+    assert.Equal(t, "testing", parent["Name"])
+}
+
+func Test_Object_ToNestedMapStringInterfaceFromIAM(t *testing.T) {
+    example := []byte(`
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Action": "ec2:*",
+      "Resource": "*",
+      "Condition": {
+          "Bool": {
+              "aws:MultiFactorAuthPresent": ["true"]
+          }
+      }
+    }
+  ]
+}`)
+
+    parent := make(map[string]interface{})
+    require.NoError(t, Unmarshal(example, &parent))
 }
 
 func Test_Object_ToNestedMapStringInterface(t *testing.T) {
-	example := []byte(`{
+    example := []byte(`{
 	"Child": {
 		"secret": "password"
 	},
 	"Name": "testing"
 }`)
 
-	parent := make(map[string]interface{})
-	require.NoError(t, Unmarshal(example, &parent))
-	assert.Equal(t, "testing", parent["Name"])
-	child := parent["Child"].(map[string]interface{})
-	assert.Equal(t, "password", child["secret"])
+    parent := make(map[string]interface{})
+    require.NoError(t, Unmarshal(example, &parent))
+    assert.Equal(t, "testing", parent["Name"])
+    child := parent["Child"].(map[string]interface{})
+    assert.Equal(t, "password", child["secret"])
 }
