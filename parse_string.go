@@ -1,6 +1,9 @@
 package jfather
 
-import "strconv"
+import (
+	"strconv"
+	"strings"
+)
 
 var escapes = map[rune]string{
 	'\\': "\\",
@@ -26,7 +29,7 @@ func (p *parser) parseString() (Node, error) {
 		return nil, p.makeError("expecting string delimiter")
 	}
 
-	var str string
+	var builder strings.Builder
 
 	var inEscape bool
 	var inHex bool
@@ -37,7 +40,8 @@ func (p *parser) parseString() (Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		if inHex {
+		switch {
+		case inHex:
 			switch {
 			case c >= 'a' && c <= 'f', c >= 'A' && c <= 'F', c >= '0' && c <= '9':
 				hex = append(hex, c)
@@ -47,36 +51,37 @@ func (p *parser) parseString() (Node, error) {
 					if err != nil {
 						return nil, p.makeError("invalid unicode character '%s'", err)
 					}
-					str += char
+					builder.WriteString(char)
 					hex = nil
 				}
 			default:
 				return nil, p.makeError("invalid hexedecimal escape sequence '\\%s%c'", string(hex), c)
 			}
-		} else if inEscape {
+		case inEscape:
 			inEscape = false
 			if c == 'u' {
 				inHex = true
+				hex = make([]rune, 0, 4)
 				continue
 			}
 			seq, ok := escapes[c]
 			if !ok {
 				return nil, p.makeError("invalid escape sequence '\\%c'", c)
 			}
-			str += seq
-		} else {
+			builder.WriteString(seq)
+		default:
 			switch c {
 			case '\\':
 				inEscape = true
 			case '"':
-				n.raw = str
+				n.raw = builder.String()
 				n.end = p.position
 				return n, nil
 			default:
 				if c < 0x20 || c > 0x10FFFF {
 					return nil, p.makeError("invalid unescaped character '0x%X'", c)
 				}
-				str += string(c)
+				builder.WriteRune(c)
 			}
 		}
 

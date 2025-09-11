@@ -1,37 +1,35 @@
 package jfather
 
 import (
-	"fmt"
 	"strconv"
+	"strings"
 )
 
 func (p *parser) parseNumber() (Node, error) {
 	n := p.newNode(KindNumber)
 
-	var str string
+	var builder strings.Builder
 
 	if p.swallowIfEqual('-') {
-		str = "-"
+		builder.WriteRune('-')
 	}
 
-	integral, err := p.parseIntegral()
+	if err := p.parseIntegral(&builder); err != nil {
+		return nil, err
+	}
+	hasFraction, err := p.parseFraction(&builder)
 	if err != nil {
 		return nil, err
 	}
-	fraction, err := p.parseFraction()
-	if err != nil {
-		return nil, err
-	}
-	exponent, err := p.parseExponent()
+	hasExponent, err := p.parseExponent(&builder)
 	if err != nil {
 		return nil, err
 	}
 
-	str = fmt.Sprintf("%s%s%s%s", str, integral, fraction, exponent)
 	n.end = p.position
 
-	if fraction != "" || exponent != "" {
-		f, err := strconv.ParseFloat(str, 64)
+	if hasFraction || hasExponent {
+		f, err := strconv.ParseFloat(builder.String(), 64)
 		if err != nil {
 			return nil, p.makeError("%s", err)
 		}
@@ -39,7 +37,7 @@ func (p *parser) parseNumber() (Node, error) {
 		return n, nil
 	}
 
-	i, err := strconv.ParseInt(str, 10, 64)
+	i, err := strconv.ParseInt(builder.String(), 10, 64)
 	if err != nil {
 		return nil, p.makeError("%s", err)
 	}
@@ -48,47 +46,47 @@ func (p *parser) parseNumber() (Node, error) {
 	return n, nil
 }
 
-func (p *parser) parseIntegral() (string, error) {
+func (p *parser) parseIntegral(b *strings.Builder) error {
 	r, err := p.next()
 	if err != nil {
-		return "", err
+		return err
 	}
 	if r == '0' {
 		r, _ := p.peeker.Peek()
 		if r >= '0' && r <= '9' {
-			return "", p.makeError("invalid number")
+			return p.makeError("invalid number")
 		}
-		return "0", nil
+		b.WriteRune('0')
+		return nil
 	}
 
-	var str string
 	if r < '1' || r > '9' {
-		return "", p.makeError("invalid number")
+		return p.makeError("invalid number")
 	}
-	str += string(r)
+	b.WriteRune(r)
 
 	for {
 		r, err := p.next()
 		if err != nil {
-			return str, nil
+			return nil
 		}
 		if r < '0' || r > '9' {
-			return str, p.undo()
+			return p.undo()
 		}
-		str += string(r)
+		b.WriteRune(r)
 	}
 }
 
-func (p *parser) parseFraction() (string, error) {
+func (p *parser) parseFraction(b *strings.Builder) (bool, error) {
 	r, err := p.next()
 	if err != nil {
-		return "", nil
+		return false, nil
 	}
 	if r != '.' {
-		return "", p.undo()
+		return false, p.undo()
 	}
 
-	str := "."
+	b.WriteRune('.')
 
 	for {
 		r, err := p.next()
@@ -97,40 +95,40 @@ func (p *parser) parseFraction() (string, error) {
 		}
 		if r < '0' || r > '9' {
 			if err := p.undo(); err != nil {
-				return "", err
+				return false, err
 			}
 			break
 		}
-		str += string(r)
+		b.WriteRune(r)
 	}
 
-	if str == "." {
-		return "", p.makeError("invalid number - missing digits after decimal point")
+	if b.String() == "." {
+		return false, p.makeError("invalid number - missing digits after decimal point")
 	}
 
-	return str, nil
+	return true, nil
 }
 
-func (p *parser) parseExponent() (string, error) {
+func (p *parser) parseExponent(b *strings.Builder) (bool, error) {
 	r, err := p.next()
 	if err != nil {
-		return "", nil
+		return false, nil
 	}
 	if r != 'e' && r != 'E' {
-		return "", p.undo()
+		return false, p.undo()
 	}
 
-	str := string(r)
+	b.WriteRune(r)
 
 	r, err = p.next()
 	if err != nil {
-		return "", nil
+		return true, nil
 	}
 	hasDigits := r >= '0' && r <= '9'
 	if r != '-' && r != '+' && !hasDigits {
-		return "", p.undo()
+		return true, p.undo()
 	}
-	str += string(r)
+	b.WriteRune(r)
 
 	for {
 		r, err := p.next()
@@ -139,17 +137,17 @@ func (p *parser) parseExponent() (string, error) {
 		}
 		if r < '0' || r > '9' {
 			if err := p.undo(); err != nil {
-				return "", err
+				return false, err
 			}
 			break
 		}
 		hasDigits = true
-		str += string(r)
+		b.WriteRune(r)
 	}
 
 	if !hasDigits {
-		return "", p.makeError("invalid number - no digits in exponent")
+		return false, p.makeError("invalid number - no digits in exponent")
 	}
 
-	return str, nil
+	return true, nil
 }

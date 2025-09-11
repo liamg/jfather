@@ -20,6 +20,8 @@ func (p *parser) parseArray() (Node, error) {
 		return n, nil
 	}
 
+	n.content = make([]Node, 0, 8)
+
 	// for each element
 	for {
 

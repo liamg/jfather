@@ -22,6 +22,8 @@ func (p *parser) parseObject() (Node, error) {
 		return n, nil
 	}
 
+	n.content = make([]Node, 0, 8)
+
 	// for each key/val
 	for {
 

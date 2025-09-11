@@ -12,15 +12,16 @@ func (p *parser) parseWhitespace() error {
 			return err
 		}
 		switch b {
-		case 0x0d, 0x20, 0x09:
-		case 0x0a:
-			p.position.Column = 1
-			p.position.Line++
+		case 0x0d, 0x20, 0x09, 0x0a:
+			if _, err := p.next(); err != nil {
+				return err
+			}
+			if b == 0x0a {
+				p.position.Column = 1
+				p.position.Line++
+			}
 		default:
 			return nil
-		}
-		if _, err := p.next(); err != nil {
-			return err
 		}
 	}
 }

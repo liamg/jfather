@@ -1,28 +1,31 @@
 package jfather
 
+// Node represents a node in the AST.
 type Node interface {
 	Range() Range
-	Decode(target interface{}) error
+	Decode(target any) error
 	Kind() Kind
 	Content() []Node
 }
 
+// Range represents a range of positions in the source.
 type Range struct {
 	Start Position
 	End   Position
 }
 
+// Position represents a position in the source code. Note that both lines and columns are 1-indexed.
 type Position struct {
 	Line   int
 	Column int
 }
 
 type node struct {
-	raw     interface{}
+	raw     any
+	content []Node
 	start   Position
 	end     Position
 	kind    Kind
-	content []Node
 }
 
 func (n *node) Range() Range {

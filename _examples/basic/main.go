@@ -35,5 +35,5 @@ func main() {
 		parent.Child.Line, parent.Child.Column, parent.Child.Name)
 
 	// outputs:
-	//  Child value is at line 2, column 12, and is set to 'secret'
+	//  Child value is at line 2, column 11, and is set to 'secret'
 }

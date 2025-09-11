@@ -40,7 +40,7 @@ func Test_Bool_ToUninitialisedPointer(t *testing.T) {
 
 func Test_Bool_ToInterface(t *testing.T) {
 	example := []byte(`true`)
-	var output interface{}
+	var output any
 	err := Unmarshal(example, &output)
 	require.NoError(t, err)
 	assert.True(t, output.(bool))

@@ -1,0 +1,23 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - errcheck
+    - gocritic
+    - gosec
+    - govet
+    - ineffassign
+    - revive
+    - staticcheck
+    - unused
+    - prealloc
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - shadow
+run:
+  timeout: 30m
+  issues-exit-code: 1
+  tests: true

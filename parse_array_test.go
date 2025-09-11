@@ -33,7 +33,7 @@ func Test_Array_ToArray(t *testing.T) {
 func Test_Array_ToInterface(t *testing.T) {
 	example := []byte(`{ "List": [1, 2, 3] }`)
 	target := struct {
-		List interface{}
+		List any
 	}{}
 	require.NoError(t, Unmarshal(example, &target))
 	assert.Len(t, target.List, 3)

@@ -5,12 +5,12 @@ import (
 	"reflect"
 )
 
-func (n *node) Decode(target interface{}) error {
+func (n *node) Decode(target any) error {
 	v := reflect.ValueOf(target)
 	return n.decodeToValue(v)
 }
 
-var inter = reflect.TypeOf((*Unmarshaller)(nil)).Elem()
+var inter = reflect.TypeOf((*Unmarshaler)(nil)).Elem()
 
 func (n *node) decodeToValue(v reflect.Value) error {
 

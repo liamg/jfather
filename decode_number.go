@@ -18,6 +18,7 @@ func (n *node) decodeNumber(v reflect.Value) error {
 			return nil
 		}
 	case reflect.Uint64, reflect.Uint32, reflect.Uint16, reflect.Uint8, reflect.Uint:
+		// #nosec G115
 		if i64, ok := n.raw.(int64); ok {
 			v.SetUint(uint64(i64))
 			return nil

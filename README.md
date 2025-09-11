@@ -1,18 +1,16 @@
 # jfather
 
-[![build](https://github.com/liamg/jfather/actions/workflows/test.yml/badge.svg)](https://github.com/liamg/jfather/actions/workflows/test.yml)
-
 Parse JSON with line numbers and more!
 
 This is a JSON parsing module that provides additional information during the unmarshalling process, such as line numbers, columns etc.
 
-You can use jfather to unmarshal JSON just like the `encoding/json` package, and add your own unmarshalling functionality to gather metadata by implementing the `jfather.Umarshaller` interface. This requires a single method with the signature `UnmarshalJSONWithMetadata(node jfather.Node) error`. A full example is below.
+You can use jfather to unmarshal JSON just like the `encoding/json` package, and add your own unmarshalling functionality to gather metadata by implementing the `jfather.Unmarshaler` interface. This requires a single method with the signature `UnmarshalJSONWithMetadata(node jfather.Node) error`. A full example is below.
 
 You should not use this package unless you need the line/column metadata, as unmarshalling is typically much slower than the `encoding/json` package:
 
 ```
-BenchmarkUnmarshal_JFather-8       	   39483	     34222 ns/op
-BenchmarkUnmarshal_Traditional-8   	  176756	      7244 ns/op
+BenchmarkUnmarshal_JFather-11    	  120945	      9401 ns/op	   14016 B/op	     176 allocs/op
+BenchmarkUnmarshal_Traditional-11     326814	      3699 ns/op	    2552 B/op	      56 allocs/op
 ```
 
 ## Full Example
@@ -55,6 +53,6 @@ func main() {
 		parent.Child.Line, parent.Child.Column, parent.Child.Name)
 
 	// outputs:
-	//  Child value is at line 2, column 12, and is set to 'secret'
+	//  Child value is at line 2, column 11, and is set to 'secret'
 }
 ```

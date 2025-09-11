@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Complex(t *testing.T) {
-	target := make(map[string]interface{})
+	target := make(map[string]any)
 	input := `{
     "glossary": {
         "title": "example glossary",
@@ -34,15 +34,13 @@ func Test_Complex(t *testing.T) {
 }
 
 type Resource struct {
-	Line    int
-	id      string
-	comment string
-	inner   resourceInner
+	inner resourceInner
+	Line  int
 }
 
 type resourceInner struct {
-	Type       string               `json:"Type" yaml:"Type"`
 	Properties map[string]*Property `json:"Properties" yaml:"Properties"`
+	Type       string               `json:"Type" yaml:"Type"`
 }
 
 func (r *Resource) UnmarshalJSONWithMetadata(node Node) error {
@@ -55,8 +53,8 @@ type Parameter struct {
 }
 
 type parameterInner struct {
-	Type    string      `json:"Type" yaml:"Type"`
-	Default interface{} `yaml:"Default"`
+	Default any    `yaml:"Default"`
+	Type    string `json:"Type" yaml:"Type"`
 }
 
 func (p *Parameter) UnmarshalJSONWithMetadata(node Node) error {
@@ -64,17 +62,15 @@ func (p *Parameter) UnmarshalJSONWithMetadata(node Node) error {
 }
 
 type Property struct {
-	name    string
-	comment string
-	Line    int
-	inner   propertyInner
+	inner propertyInner
+	Line  int
 }
 
 type CFType string
 
 type propertyInner struct {
+	Value any `json:"Value" yaml:"Value"`
 	Type  CFType
-	Value interface{} `json:"Value" yaml:"Value"`
 }
 
 func (p *Property) UnmarshalJSONWithMetadata(node Node) error {
@@ -88,7 +84,6 @@ type Temp struct {
 }
 
 type FileContext struct {
-	filepath   string
 	Parameters map[string]*Parameter `json:"Parameters" yaml:"Parameters"`
 	Resources  map[string]*Resource  `json:"Resources" yaml:"Resources"`
 }
