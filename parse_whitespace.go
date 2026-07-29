@@ -20,6 +20,13 @@ func (p *parser) parseWhitespace() error {
 				p.position.Column = 1
 				p.position.Line++
 			}
+		case '/':
+			if !p.allowComments {
+				return nil
+			}
+			if err := p.skipComment(); err != nil {
+				return err
+			}
 		default:
 			return nil
 		}
