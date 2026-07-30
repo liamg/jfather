@@ -2,19 +2,26 @@ package jfather
 
 import (
 	"fmt"
+	"io"
 )
 
 type parser struct {
-	peeker   *PeekReader
-	position Position
-	size     int
+	peeker              *PeekReader
+	position            Position
+	size                int
+	allowComments       bool
+	allowTrailingCommas bool
 }
 
-func newParser(p *PeekReader, pos Position) *parser {
-	return &parser{
+func newParser(p *PeekReader, pos Position, opts ...Option) *parser {
+	parser := &parser{
 		position: pos,
 		peeker:   p,
 	}
+	for _, opt := range opts {
+		opt(parser)
+	}
+	return parser
 }
 
 func (p *parser) parse() (Node, error) {
@@ -92,6 +99,64 @@ func (p *parser) newNode(k Kind) *node {
 	return &node{
 		start: p.position,
 		kind:  k,
+	}
+}
+
+// skipComment consumes a // line comment or /* block comment. It is
+// called from parseWhitespace when allowComments is set and the next rune
+// is '/'. A line comment stops at (but does not consume) the terminating
+// newline, leaving parseWhitespace to account for it. A '/' not followed
+// by '/' or '*' is malformed — comments are the only place '/' is legal
+// outside a string.
+func (p *parser) skipComment() error {
+	// consume the leading '/'
+	if _, err := p.next(); err != nil {
+		return err
+	}
+	c, err := p.next()
+	if err != nil {
+		return err
+	}
+
+	switch c {
+	case '/':
+		for {
+			b, err := p.peeker.Peek()
+			if err != nil {
+				if err == io.EOF {
+					return nil
+				}
+				return err
+			}
+			if b == 0x0a {
+				return nil
+			}
+			if _, err := p.next(); err != nil {
+				return err
+			}
+		}
+	case '*':
+		for {
+			b, err := p.next()
+			if err != nil {
+				if err == io.EOF {
+					return p.makeError("unterminated block comment")
+				}
+				return err
+			}
+			if b == 0x0a {
+				p.position.Column = 1
+				p.position.Line++
+				continue
+			}
+			if b == '*' {
+				if p.swallowIfEqual('/') {
+					return nil
+				}
+			}
+		}
+	default:
+		return p.makeError("unexpected character '%c' after '/'", c)
 	}
 }
 

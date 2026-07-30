@@ -10,8 +10,11 @@ type Unmarshaler interface {
 
 // Unmarshal unmarshals the given JSON data into the target value.
 // It will attempt to use UnmarshalJSONWithMetadata if the target implements it, otherwise it will use the default json unmarshaler.
-func Unmarshal(data []byte, target any) error {
-	node, err := newParser(NewPeekReader(bytes.NewReader(data)), Position{1, 1}).parse()
+//
+// By default the input must be strict JSON. Pass options such as
+// AllowComments or AllowTrailingCommas to accept common JSON dialects.
+func Unmarshal(data []byte, target any, opts ...Option) error {
+	node, err := newParser(NewPeekReader(bytes.NewReader(data)), Position{1, 1}, opts...).parse()
 	if err != nil {
 		return err
 	}

@@ -56,3 +56,28 @@ func main() {
 	//  Child value is at line 2, column 11, and is set to 'secret'
 }
 ```
+
+## Options
+
+By default `Unmarshal` accepts strict [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259) JSON. You can pass options to accept common non-standard JSON dialects. Both options are opt-in, so the default behaviour is unchanged.
+
+- `AllowComments()` — allow `//` line comments and `/* ... */` block comments anywhere whitespace is permitted.
+- `AllowTrailingCommas()` — allow a single trailing comma before a closing `]` or `}`.
+
+These are handy for formats such as [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments), `tsconfig.json`, and Azure ARM/Bicep deployment templates, all of which permit comments.
+
+```golang
+input := []byte(`{
+	// the service to deploy
+	"name": "example",
+	"tags": [ "a", "b", ], /* trailing comma */
+}`)
+
+var target map[string]any
+if err := jfather.Unmarshal(input, &target,
+	jfather.AllowComments(),
+	jfather.AllowTrailingCommas(),
+); err != nil {
+	panic(err)
+}
+```

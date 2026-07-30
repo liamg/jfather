@@ -44,5 +44,17 @@ func (p *parser) parseArray() (Node, error) {
 		if !p.swallowIfEqual(',') {
 			return nil, p.makeError("unexpected character - expecting , or ]")
 		}
+
+		// A trailing comma is allowed to precede the closing ']' when the
+		// option is set.
+		if p.allowTrailingCommas {
+			if err := p.parseWhitespace(); err != nil {
+				return nil, err
+			}
+			if p.swallowIfEqual(']') {
+				n.end = p.position
+				return n, nil
+			}
+		}
 	}
 }
