@@ -1,16 +1,15 @@
 name: test
 on:
+  push:
+    branches: [master]
   pull_request:
-  schedule:
-  - cron:  30 20 * * *
 jobs:
   tests:
     name: testing
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-go@v2
-      with:
-        go-version: '1.17' 
-    - run: go test ./...
-
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: 'go.mod'
+      - run: go test ./...
