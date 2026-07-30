@@ -145,3 +145,43 @@ func (m *metaObject) UnmarshalJSONWithMetadata(node Node) error {
 	}
 	return nil
 }
+
+func Test_AllowUnescapedControlChars_Newline(t *testing.T) {
+	// A raw newline inside a string value — as ARM templates do when
+	// breaking a long expression across multiple lines.
+	input := []byte("{ \"expr\": \"[concat('a',\n'b')]\" }")
+	var target struct {
+		Expr string `json:"expr"`
+	}
+	require.NoError(t, Unmarshal(input, &target, AllowUnescapedControlChars()))
+	assert.Equal(t, "[concat('a',\n'b')]", target.Expr)
+}
+
+func Test_AllowUnescapedControlChars_Tab(t *testing.T) {
+	input := []byte("{ \"v\": \"a\tb\" }")
+	var target struct {
+		V string `json:"v"`
+	}
+	require.NoError(t, Unmarshal(input, &target, AllowUnescapedControlChars()))
+	assert.Equal(t, "a\tb", target.V)
+}
+
+func Test_UnescapedControlChars_RejectedByDefault(t *testing.T) {
+	input := []byte("{ \"v\": \"a\nb\" }")
+	var target struct {
+		V string `json:"v"`
+	}
+	err := Unmarshal(input, &target)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid unescaped character")
+}
+
+// A literal newline inside a string must advance the line counter so
+// metadata for subsequent tokens stays accurate.
+func Test_AllowUnescapedControlChars_TracksLineNumbers(t *testing.T) {
+	input := []byte("{\n\"a\": \"x\ny\",\n\"name\": \"here\"\n}")
+	var meta metaObject
+	require.NoError(t, Unmarshal(input, &meta, AllowUnescapedControlChars()))
+	// "a" is on line 2; its value spans a raw newline; "name" is on line 4.
+	assert.Equal(t, 4, meta.nameLine)
+}

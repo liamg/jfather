@@ -36,3 +36,19 @@ func ExampleAllowTrailingCommas() {
 	fmt.Println(target.Tags)
 	// Output: [a b]
 }
+
+func ExampleAllowUnescapedControlChars() {
+	// A raw newline inside the string value (an ARM-style expression
+	// broken across lines) would fail strict JSON.
+	input := []byte("{ \"expr\": \"[concat('a',\n'b')]\" }")
+
+	var target struct {
+		Expr string `json:"expr"`
+	}
+	if err := jfather.Unmarshal(input, &target, jfather.AllowUnescapedControlChars()); err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%q\n", target.Expr)
+	// Output: "[concat('a',\n'b')]"
+}

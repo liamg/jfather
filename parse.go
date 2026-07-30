@@ -6,11 +6,12 @@ import (
 )
 
 type parser struct {
-	peeker              *PeekReader
-	position            Position
-	size                int
-	allowComments       bool
-	allowTrailingCommas bool
+	peeker                 *PeekReader
+	position               Position
+	size                   int
+	allowComments          bool
+	allowTrailingCommas    bool
+	allowUnescapedControls bool
 }
 
 func newParser(p *PeekReader, pos Position, opts ...Option) *parser {

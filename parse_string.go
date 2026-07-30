@@ -78,8 +78,15 @@ func (p *parser) parseString() (Node, error) {
 				n.end = p.position
 				return n, nil
 			default:
-				if c < 0x20 || c > 0x10FFFF {
+				if c > 0x10FFFF || (c < 0x20 && !p.allowUnescapedControls) {
 					return nil, p.makeError("invalid unescaped character '0x%X'", c)
+				}
+				// Keep line/column metadata accurate when a literal
+				// newline appears inside a string (allowed only under
+				// AllowUnescapedControlChars).
+				if c == 0x0a {
+					p.position.Column = 1
+					p.position.Line++
 				}
 				builder.WriteRune(c)
 			}
