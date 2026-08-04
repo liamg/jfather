@@ -2,6 +2,11 @@ package jfather
 
 func (p *parser) parseObject() (Node, error) {
 
+	if err := p.enterNesting(); err != nil {
+		return nil, err
+	}
+	defer p.exitNesting()
+
 	n := p.newNode(KindObject)
 	c, err := p.next()
 	if err != nil {

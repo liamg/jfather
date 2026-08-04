@@ -5,10 +5,20 @@ import (
 	"io"
 )
 
+// DefaultMaxDepth is the maximum nesting depth of arrays and objects
+// accepted by Unmarshal unless overridden with the MaxDepth option. The
+// parser (and any code that later walks the resulting tree) recurses once
+// per nesting level, so depth must be bounded to prevent maliciously deep
+// input from overflowing the stack. The value matches encoding/json's
+// nesting limit.
+const DefaultMaxDepth = 10000
+
 type parser struct {
 	peeker                 *PeekReader
 	position               Position
 	size                   int
+	depth                  int
+	maxDepth               int
 	allowComments          bool
 	allowTrailingCommas    bool
 	allowUnescapedControls bool
@@ -18,6 +28,7 @@ func newParser(p *PeekReader, pos Position, opts ...Option) *parser {
 	parser := &parser{
 		position: pos,
 		peeker:   p,
+		maxDepth: DefaultMaxDepth,
 	}
 	for _, opt := range opts {
 		opt(parser)
@@ -94,6 +105,23 @@ func (p *parser) makeError(format string, args ...any) error {
 		p.position.Column,
 		fmt.Sprintf(format, args...),
 	)
+}
+
+// enterNesting is called on entry to parseObject/parseArray, the two
+// productions that recurse. It must run before any recursive descent so
+// over-deep input is rejected while the stack is still shallow. Callers
+// must pair it with exitNesting so depth reflects nesting, not total
+// container count.
+func (p *parser) enterNesting() error {
+	p.depth++
+	if p.depth > p.maxDepth {
+		return p.makeError("maximum nesting depth of %d exceeded", p.maxDepth)
+	}
+	return nil
+}
+
+func (p *parser) exitNesting() {
+	p.depth--
 }
 
 func (p *parser) newNode(k Kind) *node {

@@ -1,6 +1,11 @@
 package jfather
 
 func (p *parser) parseArray() (Node, error) {
+	if err := p.enterNesting(); err != nil {
+		return nil, err
+	}
+	defer p.exitNesting()
+
 	n := p.newNode(KindArray)
 
 	c, err := p.next()
