@@ -59,11 +59,12 @@ func main() {
 
 ## Options
 
-By default `Unmarshal` accepts strict [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259) JSON. You can pass options to accept common non-standard JSON dialects. Both options are opt-in, so the default behaviour is unchanged.
+By default `Unmarshal` accepts strict [RFC 8259](https://datatracker.ietf.org/doc/html/rfc8259) JSON. You can pass options to accept common non-standard JSON dialects. The dialect options are all opt-in, so the default behaviour is unchanged.
 
 - `AllowComments()` — allow `//` line comments and `/* ... */` block comments anywhere whitespace is permitted.
 - `AllowTrailingCommas()` — allow a single trailing comma before a closing `]` or `}`.
 - `AllowUnescapedControlChars()` — allow literal control characters (raw newlines, tabs, etc.) inside string values, instead of requiring them to be escaped. Mirrors Python's `json.loads(..., strict=False)`.
+- `MaxDepth(n)` — override the maximum nesting depth of arrays and objects, which defaults to `DefaultMaxDepth` (10,000, matching `encoding/json`). Deeper input is rejected with an error rather than parsed, protecting the parser — and any code that recursively walks the resulting tree — from stack exhaustion on maliciously deep input. The limit cannot be disabled.
 
 These are handy for formats such as [JSONC](https://code.visualstudio.com/docs/languages/json#_json-with-comments), `tsconfig.json`, and Azure ARM/Bicep deployment templates, all of which permit comments (and, in ARM's case, long expressions broken across multiple lines inside a single string).
 

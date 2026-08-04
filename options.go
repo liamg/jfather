@@ -1,8 +1,8 @@
 package jfather
 
-// Option configures optional, non-standard parsing behaviour. All options
-// are off by default, so Unmarshal stays strict JSON unless a caller opts
-// in.
+// Option configures optional parsing behaviour. The dialect options
+// (AllowComments, AllowTrailingCommas, AllowUnescapedControlChars) are all
+// off by default, so Unmarshal stays strict JSON unless a caller opts in.
 type Option func(*parser)
 
 // AllowComments permits JavaScript-style comments — // to end of line and
@@ -17,6 +17,20 @@ func AllowComments() Option {
 // ']' or '}'. Standard JSON forbids it.
 func AllowTrailingCommas() Option {
 	return func(p *parser) { p.allowTrailingCommas = true }
+}
+
+// MaxDepth overrides the maximum nesting depth of arrays and objects,
+// which defaults to DefaultMaxDepth. Input nested deeper than the limit is
+// rejected with an error rather than parsed, protecting the parser — and
+// callers that recursively walk the resulting tree — from stack exhaustion
+// on maliciously deep input. Values less than 1 are ignored, leaving the
+// default in place; the limit cannot be disabled.
+func MaxDepth(depth int) Option {
+	return func(p *parser) {
+		if depth >= 1 {
+			p.maxDepth = depth
+		}
+	}
 }
 
 // AllowUnescapedControlChars permits literal control characters (U+0000
